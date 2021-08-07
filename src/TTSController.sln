@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speech", "Speech\Speech.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeechWebServer", "SpeechWebServer\SpeechWebServer.csproj", "{471C9269-34CC-45BC-996E-2610DA84C4C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeechPipeServer", "SpeechPipeServer\SpeechPipeServer.csproj", "{000680C9-FE1A-4D69-B141-A600AAB010E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpeechGRpcServer", "SpeechPipeServer\SpeechGRpcServer.csproj", "{000680C9-FE1A-4D69-B141-A600AAB010E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
