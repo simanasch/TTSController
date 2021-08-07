@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -25,7 +25,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="Protos\*.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\helloworld.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\TTSController.proto" GrpcServices="Server" />
   </ItemGroup>
 
   <ItemGroup>
