@@ -19,15 +19,23 @@ namespace Speech
 
         internal override string GetInstalledPath()
         {
-            string result = "";
-            // デフォルトのインストール先にVoiceroid2 64bitがインストールされているか取得する
-            string defaultInstallPath = Environment.ExpandEnvironmentVariables("%ProgramW6432%")
-                          + @"\AHS\VOICEROID2";
-            _installedPath = defaultInstallPath + @"\VoiceroidEditor.exe";
+            string uninstall_path = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\";
 
-            if (Directory.Exists(defaultInstallPath) && File.Exists(_installedPath))
+            string result = "";
+            Microsoft.Win32.RegistryKey uninstall = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(uninstall_path, false);
+            if (uninstall != null)
             {
-                result = _installedPath;
+                foreach (string subKey in uninstall.GetSubKeyNames())
+                {
+                    Microsoft.Win32.RegistryKey appkey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(uninstall_path + "\\" + subKey, false);
+                    var key = appkey.GetValue("DisplayName");
+                    if (key != null && key.ToString() == "VOICEROID2 Editor 64bit")
+                    {
+                        var location = appkey.GetValue("InstallLocation").ToString();
+                        result = Path.Combine(location, @"VoiceroidEditor.exe");
+                        break;
+                    }
+                }
             }
 
             return result;
@@ -37,9 +45,13 @@ namespace Speech
         {
             List<SpeechEngineInfo> info = new List<SpeechEngineInfo>();
             string path = GetInstalledPath();
-            foreach (var v in _name)
+            // インストール先のパスが見つからない場合はSpeechEngineInfoを追加しない
+            if (!string.IsNullOrEmpty(path))
             {
-                info.Add(new SpeechEngineInfo { EngineName = EngineName, EnginePath = path, LibraryName = v, Is64BitProcess = true });
+                foreach (var v in _name)
+                {
+                    info.Add(new SpeechEngineInfo { EngineName = EngineName, EnginePath = path, LibraryName = v, Is64BitProcess = true });
+                }
             }
             return info.ToArray();
         }
