@@ -1,8 +1,10 @@
 ﻿using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using NAudio.Wave.Compression;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -74,21 +76,34 @@ namespace Speech
             _finished = false;
             _capture = new WasapiLoopbackCapture();
             _writer = new WaveFileWriter(OutputPath, _capture.WaveFormat);
+
             _capture.DataAvailable += (s, a) =>
             {
                 _writer.Write(a.Buffer, 0, a.BytesRecorded);
+
             };
             _capture.RecordingStopped += (s, a) =>
             {
                 _writer.Flush();
                 _writer.Close();
                 _writer.Dispose();
+                using(var reader = new WaveFileReader(OutputPath))
+                {
+                    var convertWaveFormat = new WaveFormat(44100, 16, 1);
+                    using (var resampler = new MediaFoundationResampler(reader, convertWaveFormat))
+                    {
+                        WaveFileWriter.CreateWaveFile(@"16bit_" + OutputPath, resampler);
+                    }
+
+                }
+                _capture.Dispose();
                 _finished = true;
             };
             await Task.Delay((int)PreWait);
             Mute();
             _capture.StartRecording();
         }
+
         public async Task Stop()
         {
             if(_capture != null)
