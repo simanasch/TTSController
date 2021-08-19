@@ -20,6 +20,7 @@ namespace Speech
         private const int APPCOMMAND_VOLUME_DOWN = 0x90000;
         private const int WM_APPCOMMAND = 0x319;
 
+        public bool is16bit { get; set; } = true;
         bool _finished = false;
 
         [DllImport("kernel32.dll")]
@@ -73,9 +74,10 @@ namespace Speech
         }
         public async Task Start()
         {
+            String rawOutputPath = is16bit ? @"orig_" + OutputPath : OutputPath;
             _finished = false;
             _capture = new WasapiLoopbackCapture();
-            _writer = new WaveFileWriter(OutputPath, _capture.WaveFormat);
+            _writer = new WaveFileWriter(rawOutputPath, _capture.WaveFormat);
 
             _capture.DataAvailable += (s, a) =>
             {
@@ -87,14 +89,9 @@ namespace Speech
                 _writer.Flush();
                 _writer.Close();
                 _writer.Dispose();
-                using(var reader = new WaveFileReader(OutputPath))
+                if(is16bit)
                 {
-                    var convertWaveFormat = new WaveFormat(44100, 16, 1);
-                    using (var resampler = new MediaFoundationResampler(reader, convertWaveFormat))
-                    {
-                        WaveFileWriter.CreateWaveFile(@"16bit_" + OutputPath, resampler);
-                    }
-
+                    resampleTo16bit(rawOutputPath);
                 }
                 _capture.Dispose();
                 _finished = true;
@@ -116,6 +113,21 @@ namespace Speech
                     Thread.Sleep(100);
                 }
                 Unmute();
+            }
+        }
+
+        private void resampleTo16bit(String rawOutputPath)
+        {
+            using (var reader = new WaveFileReader(rawOutputPath))
+            {
+                var convertWaveFormat = new WaveFormat(48000, 16, 2);
+                var wavProvider = new WaveFloatTo16Provider(reader);
+                wavProvider.Volume = 1.3f;
+                using (var resampler = new MediaFoundationResampler(wavProvider, convertWaveFormat))
+                {
+                    WaveFileWriter.CreateWaveFile(OutputPath, resampler);
+                }
+
             }
         }
 
