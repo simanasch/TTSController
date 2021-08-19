@@ -74,7 +74,13 @@ namespace Speech
         }
         public async Task Start()
         {
-            String rawOutputPath = is16bit ? @"orig_" + OutputPath : OutputPath;
+            String dirName = Path.GetDirectoryName(OutputPath);
+            String FolderName = Path.GetFileName(OutputPath);
+            String rawOutputPath = is16bit ? Path.GetDirectoryName(OutputPath) + @"/orig_" + Path.GetFileName(OutputPath) : OutputPath;
+            if(!File.Exists(OutputPath))
+            {
+                Directory.CreateDirectory(dirName);
+            }
             _finished = false;
             _capture = new WasapiLoopbackCapture();
             _writer = new WaveFileWriter(rawOutputPath, _capture.WaveFormat);
@@ -91,9 +97,8 @@ namespace Speech
                 _writer.Dispose();
                 if(is16bit)
                 {
-                    resampleTo16bit(rawOutputPath);
+                    resampleTo16bit(rawOutputPath, OutputPath);
                 }
-                _capture.Dispose();
                 _finished = true;
             };
             await Task.Delay((int)PreWait);
@@ -116,7 +121,7 @@ namespace Speech
             }
         }
 
-        private void resampleTo16bit(String rawOutputPath)
+        private void resampleTo16bit(String rawOutputPath, String OutputPath)
         {
             using (var reader = new WaveFileReader(rawOutputPath))
             {
