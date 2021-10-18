@@ -42,13 +42,14 @@ namespace SpeechGrpcServer
             var engines = SpeechController.GetAllSpeechEngine();
             foreach (SpeechEngineInfo engineInfo in engines)
             {
-                results.DetailItem.Add( new SpeechEngineList.Types.SpeechEngineDetail
+                results.DetailItem.Add(new SpeechEngineList.Types.SpeechEngineDetail
                 {
                     EngineName = engineInfo.EngineName,
                     LibraryName = engineInfo.LibraryName,
-                    EnginePath = engineInfo.EnginePath,
+                    EnginePath = String.IsNullOrWhiteSpace(engineInfo.EnginePath) ? "" : engineInfo.EnginePath,
                     Is64BitProcess = engineInfo.Is64BitProcess
                 });
+                //Console.WriteLine(engineInfo);
             }
             return results;
         }
@@ -56,10 +57,6 @@ namespace SpeechGrpcServer
     class Program
     {
         const int Port = 30051;
-
-        //private const string PipeName = "testpipe";
-        //static bool finished = false;
-        //static NamedPipeServerStream pipeServer;
         static void Main(string[] args)
         {
             Server server = new Server
