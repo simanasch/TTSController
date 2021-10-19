@@ -134,6 +134,7 @@ namespace Speech
                 }
 
             }
+            File.Delete(rawOutputPath);
         }
 
         protected virtual void Dispose(bool disposing)
