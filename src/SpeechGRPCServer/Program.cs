@@ -36,6 +36,11 @@ namespace SpeechGrpcServer
             return Task.FromResult(GetLibraryList());
         }
 
+        public override Task<ttsResult> talk(ttsRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(talkTask(request.EngineName, request.Body));
+        }
+
         private static SpeechEngineList GetLibraryList()
         {
             var results = new SpeechEngineList();
@@ -52,6 +57,16 @@ namespace SpeechGrpcServer
                 //Console.WriteLine(engineInfo);
             }
             return results;
+        }
+
+        private static ttsResult talkTask(String LibraryName, String body)
+        {
+            Boolean isProcessed = Program.OneShotPlayMode(LibraryName, body);
+            return new ttsResult
+            {
+                IsSuccess = isProcessed,
+                OutputPath = "hoge"
+            };
         }
     }
     class Program
@@ -78,7 +93,7 @@ namespace SpeechGrpcServer
 
 
 
-        public static void OneShotPlayMode(string libraryName, string text)
+        public static Boolean OneShotPlayMode(string libraryName, string text)
         {
 
             //var engines = SpeechController.GetAllSpeechEngine();
@@ -86,15 +101,16 @@ namespace SpeechGrpcServer
             if (engine == null)
             {
                 Console.WriteLine($"{libraryName} を起動できませんでした。");
-                return;
+                return false;
             }
             engine.Activate();
             engine.Finished += (s, a) =>
             {
-                //finished = true;
                 engine.Dispose();
+
             };
             engine.Play(text);
+            return true;
 
         }
     }

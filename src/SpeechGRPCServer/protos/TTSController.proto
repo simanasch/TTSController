@@ -25,10 +25,22 @@ package ttscontroller;
 service TTSService{
   // 指定された名前の音声合成エンジンの情報を返す
   rpc getSpeechEngineDetail (SpeechEngineRequest) returns (SpeechEngineList) {}
+  // ttsのライブラリ名、テキスト内容を渡して発声させる
+  rpc talk (ttsRequest) returns (ttsResult) {} 
 }
 
 message SpeechEngineRequest {
   string EngineName = 1;
+}
+
+message ttsRequest {
+  string EngineName = 1;
+  string Body = 2;
+}
+
+message ttsResult {
+  bool IsSuccess = 1;
+  string OutputPath = 2;
 }
 
 // 音声合成エンジンの情報
