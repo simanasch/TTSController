@@ -38,7 +38,7 @@ namespace SpeechGrpcServer
 
         public override Task<ttsResult> talk(ttsRequest request, ServerCallContext context)
         {
-            return Task.FromResult(talkTask(request.EngineName, request.Body));
+            return TalkTask(request.EngineName, request.Body, request.OutputPath);
         }
 
         private static SpeechEngineList GetLibraryList()
@@ -59,14 +59,41 @@ namespace SpeechGrpcServer
             return results;
         }
 
-        private static ttsResult talkTask(String LibraryName, String body)
+        private static Task<ttsResult> TalkTask(String LibraryName, String body, String outputPath)
         {
-            Boolean isProcessed = Program.OneShotPlayMode(LibraryName, body);
-            return new ttsResult
+            // engine.finishedイベントが呼ばれてから結果を返すようにするためTaskCompletionSourceを使う
+            var tcs = new TaskCompletionSource<ttsResult>();
+
+            SoundRecorder recorder = new SoundRecorder(outputPath);
+            recorder.PostWait = 300;
+
+            var engine = SpeechController.GetInstance(LibraryName);
+            if (engine == null)
             {
-                IsSuccess = isProcessed,
-                OutputPath = "hoge"
+                Console.WriteLine($"{LibraryName} を起動できませんでした。");
+                return Task.FromResult(new ttsResult
+                {
+                    IsSuccess = false,
+                    OutputPath = ""
+                });
+            }
+
+            engine.Activate();
+            engine.Finished += (s, a) =>
+            {
+                Task t = recorder.Stop();
+                t.Wait();
+                engine.Dispose();
+                tcs.TrySetResult(new ttsResult
+                {
+                    IsSuccess = true,
+                    OutputPath = outputPath
+                });
             };
+            // recorderの起動後に音声を再生する
+            recorder.Start();
+            engine.Play(body);
+            return tcs.Task;
         }
     }
     class Program

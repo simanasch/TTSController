@@ -36,6 +36,7 @@ message SpeechEngineRequest {
 message ttsRequest {
   string EngineName = 1;
   string Body = 2;
+  string OutputPath = 3;
 }
 
 message ttsResult {
