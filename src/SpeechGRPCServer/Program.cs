@@ -36,9 +36,14 @@ namespace SpeechGrpcServer
             return Task.FromResult(GetLibraryList());
         }
 
+        public override Task<ttsResult> record(ttsRequest request, ServerCallContext context)
+        {
+            return RecordTask(request.LibraryName, request.EngineName, request.Body, request.OutputPath);
+        }
+
         public override Task<ttsResult> talk(ttsRequest request, ServerCallContext context)
         {
-            return TalkTask(request.EngineName, request.Body, request.OutputPath);
+            return TalkTask(request.LibraryName, request.EngineName, request.Body, request.OutputPath);
         }
 
         private static SpeechEngineList GetLibraryList()
@@ -59,18 +64,15 @@ namespace SpeechGrpcServer
             return results;
         }
 
-        private static Task<ttsResult> TalkTask(String LibraryName, String body, String outputPath)
+        private static Task<ttsResult> TalkTask(String libraryName, String  engineName, String body, String outputPath)
         {
             // engine.finishedイベントが呼ばれてから結果を返すようにするためTaskCompletionSourceを使う
             var tcs = new TaskCompletionSource<ttsResult>();
 
-            SoundRecorder recorder = new SoundRecorder(outputPath);
-            recorder.PostWait = 300;
-
-            var engine = SpeechController.GetInstance(LibraryName);
+            ISpeechController engine = getInstance(libraryName, engineName);
             if (engine == null)
             {
-                Console.WriteLine($"{LibraryName} を起動できませんでした。");
+                Console.WriteLine($"{libraryName} を起動できませんでした。");
                 return Task.FromResult(new ttsResult
                 {
                     IsSuccess = false,
@@ -78,6 +80,38 @@ namespace SpeechGrpcServer
                 });
             }
 
+            engine.Activate();
+            engine.Finished += (s, a) =>
+            {
+                engine.Dispose();
+                tcs.TrySetResult(new ttsResult
+                {
+                    IsSuccess = true,
+                    OutputPath = outputPath
+                });
+            };
+            engine.Play(body);
+            return tcs.Task;
+        }
+
+        private static Task<ttsResult> RecordTask(String libraryName, String engineName, String body, String outputPath)
+        {
+            // engine.finishedイベントが呼ばれてから結果を返すようにするためTaskCompletionSourceを使う
+            var tcs = new TaskCompletionSource<ttsResult>();
+
+            SoundRecorder recorder = new SoundRecorder(outputPath);
+            recorder.PostWait = 300;
+
+            ISpeechController engine = getInstance(libraryName, engineName);
+            if (engine == null)
+            {
+                Console.WriteLine($"{libraryName} を起動できませんでした。");
+                return Task.FromResult(new ttsResult
+                {
+                    IsSuccess = false,
+                    OutputPath = ""
+                });
+            }
             engine.Activate();
             engine.Finished += (s, a) =>
             {
@@ -94,6 +128,19 @@ namespace SpeechGrpcServer
             recorder.Start();
             engine.Play(body);
             return tcs.Task;
+        }
+
+        private static ISpeechController getInstance(String libraryName, String engineName)
+        {
+            if (String.IsNullOrWhiteSpace(engineName))
+            {
+                return  SpeechController.GetInstance(libraryName);
+            }
+            else
+            {
+                return  SpeechController.GetInstance(libraryName, engineName);
+            }
+
         }
     }
     class Program

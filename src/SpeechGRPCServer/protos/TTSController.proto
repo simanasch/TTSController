@@ -27,6 +27,7 @@ service TTSService{
   rpc getSpeechEngineDetail (SpeechEngineRequest) returns (SpeechEngineList) {}
   // ttsのライブラリ名、テキスト内容を渡して発声させる
   rpc talk (ttsRequest) returns (ttsResult) {} 
+  rpc record (ttsRequest) returns (ttsResult) {}
 }
 
 message SpeechEngineRequest {
@@ -34,9 +35,10 @@ message SpeechEngineRequest {
 }
 
 message ttsRequest {
-  string EngineName = 1;
-  string Body = 2;
-  string OutputPath = 3;
+  string LibraryName = 1;
+  string EngineName = 2;
+  string Body = 3;
+  string OutputPath = 4;
 }
 
 message ttsResult {
