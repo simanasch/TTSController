@@ -108,8 +108,7 @@ namespace SpeechGrpcServer
                 Console.WriteLine($"{libraryName} を起動できませんでした。");
                 return Task.FromResult(new ttsResult
                 {
-                    IsSuccess = false,
-                    OutputPath = ""
+                    IsSuccess = false
                 });
             }
             engine.Activate();
@@ -121,6 +120,9 @@ namespace SpeechGrpcServer
                 tcs.TrySetResult(new ttsResult
                 {
                     IsSuccess = true,
+                    LibraryName = libraryName,
+                    EngineName = engineName,
+                    Body = body,
                     OutputPath = outputPath
                 });
             };

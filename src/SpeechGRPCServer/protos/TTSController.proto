@@ -43,7 +43,10 @@ message ttsRequest {
 
 message ttsResult {
   bool IsSuccess = 1;
-  string OutputPath = 2;
+  string LibraryName = 2;
+  string EngineName = 3;
+  string Body = 4;
+  string OutputPath = 5;
 }
 
 // 音声合成エンジンの情報

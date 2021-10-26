@@ -6,6 +6,8 @@
     <AssemblyName>SpeechGRpcServer</AssemblyName>
     <RootNamespace>SpeechGRpcServer</RootNamespace>
     <Platforms>AnyCPU;x64</Platforms>
+    <ApplicationIcon />
+    <StartupObject />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
