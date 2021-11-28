@@ -9,6 +9,8 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Helloworld;
 using Ttscontroller;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace SpeechGrpcServer
 {
@@ -59,13 +61,14 @@ namespace SpeechGrpcServer
                     EnginePath = String.IsNullOrWhiteSpace(engineInfo.EnginePath) ? "" : engineInfo.EnginePath,
                     Is64BitProcess = engineInfo.Is64BitProcess
                 });
-                //Console.WriteLine(engineInfo);
+                Console.WriteLine(engineInfo);
             }
             return results;
         }
 
         private static Task<ttsResult> TalkTask(String libraryName, String  engineName, String body, String outputPath)
         {
+            Console.WriteLine("talk called,Library Name:" + libraryName + "\nengine:" + engineName + "\nbody:" + body);
             // engine.finishedイベントが呼ばれてから結果を返すようにするためTaskCompletionSourceを使う
             var tcs = new TaskCompletionSource<ttsResult>();
 
@@ -84,6 +87,7 @@ namespace SpeechGrpcServer
             engine.Finished += (s, a) =>
             {
                 engine.Dispose();
+                Console.WriteLine("talk completed");
                 tcs.TrySetResult(new ttsResult
                 {
                     IsSuccess = true,
@@ -96,6 +100,7 @@ namespace SpeechGrpcServer
 
         private static Task<ttsResult> RecordTask(String libraryName, String engineName, String body, String outputPath)
         {
+            Console.WriteLine("Record called,Library Name:" + libraryName + "\nengine:" + engineName + "\nbody:" + body);
             // engine.finishedイベントが呼ばれてから結果を返すようにするためTaskCompletionSourceを使う
             var tcs = new TaskCompletionSource<ttsResult>();
 
@@ -117,6 +122,7 @@ namespace SpeechGrpcServer
                 Task t = recorder.Stop();
                 t.Wait();
                 engine.Dispose();
+                Console.WriteLine("record completed");
                 tcs.TrySetResult(new ttsResult
                 {
                     IsSuccess = true,
@@ -147,10 +153,12 @@ namespace SpeechGrpcServer
     }
     class Program
     {
-        const int Port = 30051;
+        const int Port = 5001;
+        static Server server = null;
+
         static void Main(string[] args)
         {
-            Server server = new Server
+            server = new Server
             {
                 Services = {
                     Greeter.BindService(new GreeterImpl()),
@@ -161,10 +169,11 @@ namespace SpeechGrpcServer
             server.Start();
 
             Console.WriteLine("localhost:" + Port + "で接続待機中");
-            Console.WriteLine("なにかキーを押すとサーバーを閉じます");
-            Console.ReadKey();
+            while (true)
+            {
+                Thread.Sleep(500);
+            }
 
-            server.ShutdownAsync().Wait();
         }
 
 
@@ -172,7 +181,6 @@ namespace SpeechGrpcServer
         public static Boolean OneShotPlayMode(string libraryName, string text)
         {
 
-            //var engines = SpeechController.GetAllSpeechEngine();
             var engine = SpeechController.GetInstance(libraryName);
             if (engine == null)
             {
