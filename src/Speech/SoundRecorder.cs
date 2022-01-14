@@ -95,6 +95,7 @@ namespace Speech
                 _writer.Flush();
                 _writer.Close();
                 _writer.Dispose();
+                // added by simana,ビットレートの変換に対応
                 if(is16bit)
                 {
                     resampleTo16bit(rawOutputPath, OutputPath);
@@ -121,6 +122,10 @@ namespace Speech
             }
         }
 
+        /**
+         * added by simana
+         * @description wasAPIで作成した録音ファイルを16bit,48000kHzの.wavファイルに変換する
+         */
         private void resampleTo16bit(String rawOutputPath, String OutputPath)
         {
             using (var reader = new WaveFileReader(rawOutputPath))

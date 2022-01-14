@@ -1,6 +1,11 @@
 # TTSController
 各種 Text-to-Speech エンジンを統一的に操作するライブラリです。VOICEROIDなどを自動化する簡易Webサーバもあります。
 
+## fork内での変更内容
+
+* 各種ttsサービスのgRPCサーバー実装を追加 (src/SpeechGRpcServer配下)
+* src/Speech/SoundRecorder.csについて、音声保存時にビットレート変換の処理を追加(aviutlでの読み込みに対応するため、16bit,44100kHzに変換)
+
 ## 対応プラットフォーム
 - Windows 10 (64bit)
 
