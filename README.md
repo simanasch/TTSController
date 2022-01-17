@@ -77,3 +77,10 @@
 - [ ] 音声合成対象の文字列の途中に音声コントロールを埋め込み
 - [x] 音声出力デバイス選択
 
+## ライブラリ
+以下のライブラリを使用して実装しています、ライセンスの詳細は[thirdPirtyLicenses](./docs/thirdPirtyLicenses.md)を参照ください
+
+Codeer.Friendly
+Google.Protobuf
+GRPC
+NAudio
