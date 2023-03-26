@@ -98,6 +98,20 @@ namespace Speech
         }
 
         /// <summary>
+        /// A.I.VOICE Editor APIを使用し、音声保存を行う
+        /// </summary>
+        /// <param name="text">録音する文字列</param>
+        /// <param name="path">ファイルの保存先パス</param>
+        public void Record(String text, String path)
+        {
+            text = text.Trim() == "" ? "." : text;
+            string t = _libraryName + _promptString + text;
+            _ttsControl.Text = t;
+            // TODO: ホストプログラムの「音声ファイルパスの指定方法」が「ファイル命名規則」の場合、引数で指定されたパスが無視される
+            _ttsControl.SaveAudioToFile(path);
+        }
+
+        /// <summary>
         /// 音声再生が完了したときに発生するイベント
         /// </summary>
         public event EventHandler<EventArgs> Finished;
