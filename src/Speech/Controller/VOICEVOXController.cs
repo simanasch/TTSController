@@ -65,7 +65,7 @@ namespace Speech
             using (var client = new HttpClient())
             {
                 var response = client.GetAsync($"{_baseUrl}/docs").GetAwaiter().GetResult();
-                return (response.StatusCode == HttpStatusCode.OK);                
+                return (response.StatusCode == HttpStatusCode.OK);
             }
         }
 
@@ -147,6 +147,53 @@ namespace Speech
         public void Play()
         {
         }
+
+        /// <summary>
+        /// 指定した文字列を読み上げ、ファイルに保存する
+        /// </summary>
+        /// <param name="text">録音する文字列</param>
+        /// <param name="path">ファイルの保存先パス</param>
+        public void Record(String text, String path)
+        {
+            var content = new StringContent("", Encoding.UTF8, @"application/json");
+            var encodeText = Uri.EscapeDataString(text);
+
+            int talkerNo = _enumerator.Names[_libraryName];
+
+            string queryData = "";
+            using (var client = new HttpClient())
+            {
+                try
+                {
+                    var response = client.PostAsync($"{_baseUrl}/audio_query?text={encodeText}&speaker={talkerNo}", content).GetAwaiter().GetResult();
+                    if (response.StatusCode != HttpStatusCode.OK) { return; }
+                    queryData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                    // 音量等のパラメータを反映させる
+                    queryData = UpdateParam(queryData);
+
+                    content = new StringContent(queryData, Encoding.UTF8, @"application/json");
+                    response = client.PostAsync($"{_baseUrl}/synthesis?speaker={talkerNo}", content).GetAwaiter().GetResult();
+                    if (response.StatusCode != HttpStatusCode.OK) { return; }
+
+                    var soundData = response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+
+                    using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        soundData.CopyTo(fileStream);
+
+                    }
+
+                    SoundPlayer sp = new SoundPlayer();
+                    sp.Play(path);
+                }
+                finally
+                {
+                    OnFinished();
+                }
+            }
+        }
+
         /// <summary>
         /// 再生を停止します
         /// </summary>
