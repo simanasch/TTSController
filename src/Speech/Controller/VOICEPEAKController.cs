@@ -31,6 +31,7 @@ namespace Speech
             psInfo.UseShellExecute = false;
             psInfo.RedirectStandardOutput = true;
             psInfo.Arguments = args;
+            psInfo.StandardOutputEncoding = Encoding.UTF8;
 
             using (Process p = Process.Start(psInfo))
             {
@@ -92,9 +93,18 @@ namespace Speech
             }
         }
 
+        /// <summary>
+        /// 指定した文字列を読み上げ、ファイルに保存する
+        /// </summary>
+        /// <param name="text">録音する文字列</param>
+        /// <param name="path">ファイルの保存先パス</param>
+        public void Record(String text, String path)
+        {
+            ExecuteVoicepeak($"-n \"{Info.LibraryName}\" -s \"{text}\" -o \"" + path + "\"");
+        }
 
         /// <summary>
-        /// VOICEROID2 に入力された文字列を再生します
+        /// Voicepeak に入力された文字列を再生します
         /// </summary>
         public void Play()
         {
