@@ -14,13 +14,9 @@ namespace Speech
 {
     public class VOICEPEAKController : IDisposable, ISpeechController
     {
-
+        // voicepeakの実行終わるまでのウェイト
+        private int PROCESS_WAIT_MILLISECONDS = 3000;
         public SpeechEngineInfo Info { get; private set; }
-
-        /// <summary>
-        /// Voiceroid のフルパス
-        /// </summary>
-        public string VoiceroidPath { get; private set; }
 
         private string[] ExecuteVoicepeak(string args)
         {
@@ -36,7 +32,7 @@ namespace Speech
             using (Process p = Process.Start(psInfo))
             {
                 // Voicepeakは非同期実行されるのでプロセス終了後に標準出力を取り出す
-                p.WaitForExit(10);
+                p.WaitForExit(PROCESS_WAIT_MILLISECONDS);
 
                 // 行の整形
                 string[] stdout = p.StandardOutput.ReadToEnd().Split('\n');
